@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "swift-system",
+        "repositoryURL": "https://github.com/apple/swift-system",
+        "state": {
+          "branch": null,
+          "revision": "836bc4557b74fe6d2660218d56e3ce96aff76574",
+          "version": "1.1.1"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
