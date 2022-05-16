@@ -19,9 +19,9 @@ extension FilePath {
     var status = stat()
     try self.withPlatformString { cString in
         if stat(cString, &status) != 0 {
-            throw Errno(rawValue: errno)
+            throw Errno(rawValue: system_errno)
         }
     }
-    return FileMetadata(permissions: FilePermissions(rawValue: status.st_mode & 0o7777))
+    return FileMetadata(permissions: FilePermissions(rawValue: CInterop.Mode(status.st_mode) & 0o7777))
   }
 }
