@@ -1,5 +1,5 @@
 @testable import SystemExtras
-import System
+import SystemPackage
 import XCTest
 
 final class MetadataTests: XCTestCase {

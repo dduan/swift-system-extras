@@ -8,7 +8,7 @@ import ucrt
 #error("Unsupported Platform")
 #endif
 
-import System
+import SystemPackage
 
 public struct FileMetadata {
   public let permissions: FilePermissions
