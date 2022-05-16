@@ -16,12 +16,14 @@ public struct FileMetadata {
 
 extension FilePath {
   public func metadata() throws -> FileMetadata {
-    var status = stat()
+    var status = system_stat_struct()
     try self.withPlatformString { cString in
-        if stat(cString, &status) != 0 {
+        if system_stat(cString, &status) != 0 {
             throw Errno(rawValue: system_errno)
         }
     }
-    return FileMetadata(permissions: FilePermissions(rawValue: CInterop.Mode(status.st_mode) & 0o7777))
+
+    let permissions = FilePermissions(rawValue: CInterop.Mode(status.st_mode) & 0o7777)
+    return FileMetadata(permissions: permissions)
   }
 }
