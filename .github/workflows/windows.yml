@@ -1,0 +1,21 @@
+name: Windows 2019
+
+on: [push]
+
+jobs:
+  Windows:
+    name: Windows
+    runs-on: windows-2019
+    steps:
+    - name: Check out
+      uses: actions/checkout@v2
+    - name: Install Swift
+      uses: compnerd/gha-setup-swift@main
+      with:
+        branch: swift-5.6.1-release
+        tag: 5.6.1-RELEASE
+    - name: Test
+      shell: cmd
+      run: |
+        echo on
+        C:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin\swift-test.exe

@@ -1,0 +1,12 @@
+name: Ubuntu Focal
+
+on: [push]
+
+jobs:
+  linux:
+    name: Ubuntu Focal
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test
+      run: .github/docker.sh SystemExtras 'swift test -Xswiftc -warnings-as-errors' 5.6.1 focal
