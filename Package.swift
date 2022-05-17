@@ -22,11 +22,15 @@ let package = Package(
         ),
         .testTarget(name: "SystemExtrasTests", dependencies: ["SystemExtras"]),
 
+    ] + [
         // Examples
+        "cwd",
+        "mkdir",
+    ].map { name in
         .executableTarget(
-            name: "cwd",
+            name: name,
             dependencies: [.target(name: "SystemExtras")],
-            path: "Examples/cwd"
-        ),
-    ]
+            path: "Examples/\(name)"
+        )
+    }
 )
