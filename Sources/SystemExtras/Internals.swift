@@ -61,3 +61,13 @@ func system_chdir(_ path: UnsafePointer<CInterop.PlatformChar>) -> CInt {
     chdir(path)
 }
 #endif
+
+#if os(Windows)
+func system_mkdir(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop.Mode) -> CInt {
+    _wmkdir(path)
+}
+#else
+func system_mkdir(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop.Mode) -> CInt {
+    mkdir(path, mode)
+}
+#endif
