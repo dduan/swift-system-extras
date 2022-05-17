@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "SystemExtras",
+    name: "swift-system-extras",
     platforms: [.macOS(.v12)],
     products: [
         .library(
@@ -20,8 +20,13 @@ let package = Package(
                 .product(name: "SystemPackage", package: "swift-system"),
             ]
         ),
-        .testTarget(
-            name: "SystemExtrasTests",
-            dependencies: ["SystemExtras"]),
+        .testTarget(name: "SystemExtrasTests", dependencies: ["SystemExtras"]),
+
+        // Examples
+        .executableTarget(
+            name: "cwd",
+            dependencies: [.target(name: "SystemExtras")],
+            path: "Examples/cwd"
+        ),
     ]
 )
