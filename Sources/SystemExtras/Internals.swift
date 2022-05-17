@@ -71,3 +71,13 @@ func system_mkdir(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop
     mkdir(path, mode)
 }
 #endif
+
+#if os(Windows)
+func system_getenv(_ name: UnsafePointer<CInterop.PlatformChar>) -> UnsafeMutablePointer<CInterop.PlatformChar> {
+    _wgetenv(name)
+}
+#else
+func system_getenv(_ name: UnsafePointer<CInterop.PlatformChar>) -> UnsafeMutablePointer<CInterop.PlatformChar> {
+    getenv(name)
+}
+#endif
