@@ -19,7 +19,6 @@ internal var system_errno: CInt {
 internal var system_errno: CInt {
   get {
     var value: CInt = 0
-    // TODO(compnerd) handle the error?
     _ = ucrt._get_errno(&value)
     return value
   }
