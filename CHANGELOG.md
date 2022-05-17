@@ -9,3 +9,5 @@
 - Add `FilePath.searchForTemporaryDirectory()` static method that finds default temporary directory in an OS.
 - Add `FilePath.defaultTemporaryDirectory` static variable that dictates root of all temporary directories.
 - Add `FilePath.makeTemporaryDirectory()` static method that makes temporary directory with writable access.
+- Add `FilePath.asWorkingDirectory()` method which execute a closure with `self` as the working directory, and
+  then restores the original working directory.

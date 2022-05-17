@@ -16,4 +16,19 @@ extension FilePath {
             }
         }
     }
+
+    /// Set `self` as the current working directory (cwd), run `action`, and
+    /// restore the original current working directory after `action` finishes.
+    ///
+    /// - Parameter action: A closure that runs with `self` being the current
+    ///                     working directory.
+    public func asWorkingDirectory(running action: @escaping () throws -> Void) throws {
+        let currentDirectory = try FilePath.workingDirectory()
+        defer {
+            try? FilePath.setWorkingDirectory(currentDirectory)
+        }
+
+        try FilePath.setWorkingDirectory(self)
+        try action()
+    }
 }
