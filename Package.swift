@@ -18,6 +18,9 @@ let package = Package(
             name: "SystemExtras",
             dependencies: [
                 .product(name: "SystemPackage", package: "swift-system"),
+            ],
+            cSettings: [
+                .define("_CRT_SECURE_NO_WARNINGS")
             ]
         ),
         .testTarget(name: "SystemExtrasTests", dependencies: ["SystemExtras"]),

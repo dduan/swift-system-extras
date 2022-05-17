@@ -6,3 +6,6 @@
 - Add `FilePath.setWorkingDirectory()` static method for setting current working directory.
 - Add `FilePath.exists()` method that checks whether a path exists.
 - Add `FilePath.makeDirectory(withParants:permissions:)` method that creates a directory and its parents.
+- Add `FilePath.searchForTemporaryDirectory()` static method that finds default temporary directory in an OS.
+- Add `FilePath.defaultTemporaryDirectory` static variable that dictates root of all temporary directories.
+- Add `FilePath.makeTemporaryDirectory()` static method that makes temporary directory with writable access.
