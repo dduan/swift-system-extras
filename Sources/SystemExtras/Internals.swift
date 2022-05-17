@@ -45,3 +45,20 @@ func system_stat(_ path: UnsafePointer<CInterop.PlatformChar>, _ result: inout s
   stat(path, &result)
 }
 #endif
+
+#if os(Windows)
+func system_getcwd() -> UnsafeMutablePointer<CInterop.PlatformChar>? {
+    _wgetcwd(nil, 0)
+}
+
+func system_chdir(_ path: UnsafePointer<CInterop.PlatformChar>) -> CInt {
+    _wchdir(path)
+}
+#else
+func system_getcwd() -> UnsafeMutablePointer<CInterop.PlatformChar>? {
+    getcwd(nil, 0)
+}
+func system_chdir(_ path: UnsafePointer<CInterop.PlatformChar>) -> CInt {
+    chdir(path)
+}
+#endif
