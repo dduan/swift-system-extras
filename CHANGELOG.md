@@ -11,3 +11,5 @@
 - Add `FilePath.makeTemporaryDirectory()` static method that makes temporary directory with writable access.
 - Add `FilePath.asWorkingDirectory()` method which execute a closure with `self` as the working directory, and
   then restores the original working directory.
+- Add `FilePath.directoryContent(recursive:)` method. This method returns a `Sequence` `DirectoryContent`,
+  whose element is a 2-tuple of file path and type in `self`, if `self` is a directory.
