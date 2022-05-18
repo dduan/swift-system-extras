@@ -24,11 +24,8 @@ extension FilePath {
     ///                     working directory.
     public func asWorkingDirectory(running action: @escaping () throws -> Void) throws {
         let currentDirectory = try FilePath.workingDirectory()
-        defer {
-            try? FilePath.setWorkingDirectory(currentDirectory)
-        }
-
         try FilePath.setWorkingDirectory(self)
         try action()
+        try FilePath.setWorkingDirectory(currentDirectory)
     }
 }
