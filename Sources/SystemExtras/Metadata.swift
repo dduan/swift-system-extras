@@ -2,6 +2,7 @@ import SystemPackage
 
 public struct FileMetadata {
   public let permissions: FilePermissions
+  public let fileType: FileType
 }
 
 extension FilePath {
@@ -13,8 +14,10 @@ extension FilePath {
         }
     }
 
-    let permissions = FilePermissions(rawValue: CInterop.Mode(status.st_mode) & 0o7777)
-    return FileMetadata(permissions: permissions)
+    let mode = CInterop.Mode(status.st_mode)
+    let permissions = FilePermissions(rawValue: mode & 0o7777)
+    let type = FileType(rawMode: mode)
+    return FileMetadata(permissions: permissions, fileType: type)
   }
 
   /// Return `true` if path refers to an existing path.
