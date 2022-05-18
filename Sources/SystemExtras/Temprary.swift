@@ -88,12 +88,12 @@ extension FilePath {
     ///
     /// - Parameter action: The closure to execute in the temporary environment. The temporary directory is
     ///                     sent as a parameter for the action closure.
-    // public static func withTemporaryDirectory(run action: @escaping (FilePath) throws -> Void) throws {
-    //     let temporaryDirectory = try makeTemporaryDirectory()
-    //     try temporaryDirectory.asWorkingDirectory {
-    //         try action(temporaryDirectory)
-    //     }
+    public static func withTemporaryDirectory(run action: @escaping (FilePath) throws -> Void) throws {
+        let temporaryDirectory = try makeTemporaryDirectory()
+        try temporaryDirectory.asWorkingDirectory {
+            try action(temporaryDirectory)
+        }
 
-    //     try temporaryDirectory.delete(recursive: true)
-    // }
+        try temporaryDirectory.delete(recursive: true)
+    }
 }
