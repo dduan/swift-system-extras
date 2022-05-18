@@ -9,10 +9,23 @@ import WinSDK
 #error("Unsupported Platform")
 #endif
 
+import SystemPackage
+
 public struct FileType {
     public let isFile: Bool
     public let isDirectory: Bool
     public let isSymlink: Bool
+
+    init(rawMode: CInterop.Mode) {
+        let masked = rawMode & S_IFMT
+        self.isFile = masked == S_IFREG
+        self.isDirectory = masked == S_IFDIR
+#if os(Windows)
+        self.isSymlink = false
+#else
+        self.isSymlink = masked == S_IFLNK
+#endif
+    }
 
 #if os(Windows)
     init(data: WIN32_FIND_DATAW) {
