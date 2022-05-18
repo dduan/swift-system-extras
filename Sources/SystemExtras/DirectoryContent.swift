@@ -31,11 +31,22 @@ public struct DirectoryContent: Sequence {
 }
 
 #if os(Windows)
-public struct DirectoryContentIterator: IteratorProtocol {
+public final class DirectoryContentIterator: IteratorProtocol {
     var queue: [FilePath]
     let recursive: Bool
+    init(queue: [FilePath], recursive: Bool) {
+        self.queue = queue
+        self.recursive = recursive
+    }
+
+    deinit {
+        if let handle = self.current?.handle {
+            CloseHandle(handle)
+        }
+    }
+
     var current: (handle: UnsafeMutableRawPointer, path: FilePath)?
-    public mutating func next() -> (FilePath, FileType)? {
+    public func next() -> (FilePath, FileType)? {
         func process(_ data: WIN32_FIND_DATAW) -> (FilePath, FileType)? {
             guard let name = withUnsafeBytes(of: data.cFileName, {
                 $0.bindMemory(to: CInterop.PlatformChar.self)
@@ -88,15 +99,27 @@ public struct DirectoryContentIterator: IteratorProtocol {
     }
 }
 #else
-public struct DirectoryContentIterator: IteratorProtocol {
+public final class DirectoryContentIterator: IteratorProtocol {
     var queue: [FilePath]
     let recursive: Bool
+
+    init(queue: [FilePath], recursive: Bool) {
+        self.queue = queue
+        self.recursive = recursive
+    }
+
+    deinit {
+        if let handle = self.current?.handle {
+            closedir(handle)
+        }
+    }
+
 #if os(macOS)
     var current: (handle: UnsafeMutablePointer<DIR>, path: FilePath)?
 #else
     var current: (handle: OpaquePointer, path: FilePath)?
 #endif
-    public mutating func next() -> (FilePath, FileType)? {
+    public func next() -> (FilePath, FileType)? {
         if let (handle, currentPath) = self.current {
             guard let entry = readdir(handle)?.pointee else {
                 closedir(handle)
