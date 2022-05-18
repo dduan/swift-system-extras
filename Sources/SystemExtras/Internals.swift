@@ -81,3 +81,23 @@ func system_getenv(_ name: UnsafePointer<CInterop.PlatformChar>) -> UnsafeMutabl
     getenv(name)
 }
 #endif
+
+#if os(Windows)
+func system_rmdir(_ path: UnsafePointer<CInterop.PlatformChar>) -> CInt {
+    _wrmdir(path)
+}
+#else
+func system_rmdir(_ path: UnsafePointer<CInterop.PlatformChar>) -> CInt {
+    rmdir(path)
+}
+#endif
+
+#if os(Windows)
+func system_unlink(_ path: UnsafePointer<CInterop.PlatformChar>) -> CInt {
+    _wunlink(path)
+}
+#else
+func system_unlink(_ path: UnsafePointer<CInterop.PlatformChar>) -> CInt {
+    unlink(path)
+}
+#endif

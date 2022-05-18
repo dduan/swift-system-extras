@@ -13,3 +13,4 @@
   then restores the original working directory.
 - Add `FilePath.directoryContent(recursive:)` method. This method returns a `Sequence` `DirectoryContent`,
   whose element is a 2-tuple of file path and type in `self`, if `self` is a directory.
+- Add `FilePath.delete(recursive:)` which deletes the content at `self`.

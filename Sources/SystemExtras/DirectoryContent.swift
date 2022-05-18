@@ -20,6 +20,7 @@ extension FilePath {
 public struct DirectoryContent: Sequence {
     let directory: FilePath
     let recursive: Bool
+
     public init(of directory: FilePath, recursive: Bool = false) {
         self.directory = directory
         self.recursive = recursive

@@ -33,4 +33,35 @@ extension FilePath {
 
         try _makeDirectory()
     }
+
+    /// Delete content at `self`.
+    /// Content of directory is deleted alongside the directory itself, unless specified otherwise.
+    ///
+    /// - Parameter recursive: `true` means content of non-empty directory will be deleted along
+    ///                        with the directory itself.
+    public func delete(recursive: Bool = false) throws {
+        guard let meta = try? self.metadata() else {
+            return // file doesn't exist
+        }
+
+        if meta.fileType.isDirectory {
+            if recursive {
+                for child in self.directoryContent() {
+                    try child.0.delete(recursive: true)
+                }
+            }
+
+            try self.withPlatformString { cString in
+                if system_rmdir(cString) != 0 {
+                    throw Errno(rawValue: system_errno)
+                }
+            }
+        } else {
+            try self.withPlatformString { cString in
+                if system_unlink(cString) != 0 {
+                    throw Errno(rawValue: system_errno)
+                }
+            }
+        }
+    }
 }
