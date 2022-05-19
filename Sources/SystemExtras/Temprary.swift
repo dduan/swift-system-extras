@@ -18,9 +18,10 @@ extension FilePath {
     /// - Returns: A suitable default temporary directory.
     public static func searchForDefaultTemporaryDirectory() -> Self {
         for envName in ["TMPDIR", "TMP", "TEMP"] {
-            let envvar = envName.withPlatformString { system_getenv($0) }
-            let path = FilePath(platformString: envvar)
-            if path.isEmpty {
+            guard let envvar = envName.withPlatformString({ system_getenv($0) }),
+                case let path = FilePath(platformString: envvar),
+                !path.isEmpty
+            else {
                 continue
             }
 
@@ -37,9 +38,10 @@ extension FilePath {
         }
 
         for envName in ["HOME", "USERPROFILE"] {
-            let envvar = envName.withPlatformString { system_getenv($0) }
-            let path = FilePath(platformString: envvar)
-            if path.isEmpty {
+            guard let envvar = envName.withPlatformString({ system_getenv($0) }),
+                case let path = FilePath(platformString: envvar),
+                path.isEmpty
+            else {
                 continue
             }
 
