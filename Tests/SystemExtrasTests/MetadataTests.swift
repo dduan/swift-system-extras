@@ -13,4 +13,9 @@ final class MetadataTests: XCTestCase {
         XCTAssertTrue(try path.metadata().fileType.isFile)
         XCTAssertTrue(try path.removingLastComponent().metadata().fileType.isDirectory)
     }
+
+    func testSize() throws {
+        let path: FilePath = #file
+        XCTAssert(try path.metadata().size > 0)
+    }
 }
