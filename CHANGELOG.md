@@ -17,3 +17,10 @@
 - Add `FilePath.withTemproraryDirectory(run:)` which runs a closure with a newly created temporary directory
   as the working directory, and removes the temporary directory, restores original working directories
   afterwards.
+- Add the following convenient method for reading and writing on a file path:
+    * `FilePath.readBytes(fromAbsoluteOffset:)`: read bytes from `self`
+    * `FilePath.readString(as:)`: read bytes and encode to string with a specified encoding.
+    * `FilePath.readUTF8String()`: read bytes and encode to UTF-8 string.
+    * `FilePath.write(:options:permissions:)`: write sequence of bytes to `self`.
+    * `FilePath.write(utf8:options:permissions:)`: write a string decoded with UTF-8 to `self`.
+
