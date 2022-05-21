@@ -18,10 +18,10 @@ extension FilePath {
     let mode = CInterop.Mode(status.st_mode)
     let permissions = FilePermissions(rawValue: mode & 0o7777)
     let type = FileType(rawMode: mode)
-#if os(Windows)
-    let size = Int(status.st_size)
-#else
+#if os(Linux)
     let size = status.st_size
+#else
+    let size = Int(status.st_size)
 #endif
     return FileMetadata(permissions: permissions, fileType: type, size: size)
   }
