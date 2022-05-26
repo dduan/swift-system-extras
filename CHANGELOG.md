@@ -24,3 +24,4 @@
     * `FilePath.write(:options:permissions:)`: write sequence of bytes to `self`.
     * `FilePath.write(utf8:options:permissions:)`: write a string decoded with UTF-8 to `self`.
 
+Add `FilePath.set(_:)` method, which sets new `FilePermission` at `self`.

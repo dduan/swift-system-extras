@@ -29,6 +29,7 @@ let package = Package(
         // Examples
         "cwd",
         "mkdir",
+        "ls",
     ].map { name in
         .executableTarget(
             name: name,

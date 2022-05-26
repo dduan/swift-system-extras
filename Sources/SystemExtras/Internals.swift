@@ -101,3 +101,13 @@ func system_unlink(_ path: UnsafePointer<CInterop.PlatformChar>) -> CInt {
     unlink(path)
 }
 #endif
+
+#if os(Windows)
+func system_chmod(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop.Mode) -> CInt {
+    _wchmod(path, mode)
+}
+#else
+func system_chmod(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop.Mode) -> CInt {
+    chmod(path, mode)
+}
+#endif
