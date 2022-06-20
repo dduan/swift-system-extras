@@ -55,7 +55,9 @@ final class MoveTests: XCTestCase {
             XCTAssert(cInAPath.exists())
             XCTAssertFalse(bDirectoryPath.exists())
 
+            print(">>> before move")
             try aDirectoryPath.move(to: bDirectoryPath)
+            print(">>> after move")
 
             XCTAssertFalse(aDirectoryPath.exists())
             XCTAssertFalse(cInAPath.exists())
