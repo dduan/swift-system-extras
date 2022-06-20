@@ -9,8 +9,6 @@ jobs:
     env:
       SWIFT_RELEASE: 5.6.1-RELEASE
     steps:
-    - name: Check out
-      uses: actions/checkout@v2
     - name: Cache Swift Installation
       id: cache-swift-installation
       uses: actions/cache@v3
@@ -23,6 +21,8 @@ jobs:
       with:
         branch: swift-${{ env.SWIFT_RELEASE }}
         tag: ${{ env.SWIFT_RELEASE }}
+    - name: Check out
+      uses: actions/checkout@v2
     - name: Test
       shell: cmd
       run: |
