@@ -1,4 +1,7 @@
 import SystemPackage
+#if os(Windows)
+import WinSDK
+#endif
 
 extension FilePath {
     /// Create a directory, and, optionally, any intermediate directories that leads to it, if they don't
