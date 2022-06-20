@@ -125,6 +125,7 @@ func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: Uns
 }
 #else
 func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: UnsafePointer<CInterop.PlatformChar>) -> CInt {
-    rename(source, target)
+    print(">>>")
+    return rename(source, target)
 }
 #endif
