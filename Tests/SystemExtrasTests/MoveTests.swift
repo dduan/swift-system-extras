@@ -65,6 +65,7 @@ final class MoveTests: XCTestCase {
             XCTAssert(try bDirectoryPath.metadata().fileType.isDirectory)
             let content = try cInBPath.readUTF8String()
             XCTAssertEqual(content, expectedContent)
+            print(">>> everything went well in temporary directory")
         }
     }
 }
