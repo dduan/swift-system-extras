@@ -1,7 +1,7 @@
 import SystemPackage
 import XCTest
 
-final class CRUDTests: XCTestCase {
+final class MoveTests: XCTestCase {
     func testMoveFile() throws {
         try FilePath.withTemporaryDirectory { temp in
             let expectedContent = "Hello"
