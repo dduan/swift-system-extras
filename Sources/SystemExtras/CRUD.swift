@@ -47,6 +47,7 @@ extension FilePath {
         if meta.fileType.isDirectory {
             if recursive {
                 for child in self.directoryContent() {
+                    print("\(child.0)")
                     try child.0.delete(recursive: true)
                 }
             }
