@@ -52,9 +52,14 @@ extension FilePath {
                 }
             }
 
-            try self.withPlatformString { cString in
-                print("trying to delete directory \(self)")
-                if system_rmdir(cString) != 0 {
+            // On Windows, we can't rely on the OS to think all children have been deleted at this point.
+            // The only way to convince the os is to move the directory to another location first.
+            let randomName = "\(UInt64.random(in: 0 ... .max))"
+            let tempLocation = FilePath.defaultTemporaryDirectory.appending(randomName)
+            try self.move(to: tempLocation)
+
+            try tempLocation.withPlatformString { tempCString in
+                if system_rmdir(tempCString) != 0 {
                     throw Errno(rawValue: system_errno)
                 }
             }
