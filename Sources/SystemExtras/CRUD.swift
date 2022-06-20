@@ -64,4 +64,17 @@ extension FilePath {
             }
         }
     }
+
+    /// Move a file or direcotry to a new path. If the destination already exist, write over it.
+    ///
+    /// - Parameter newPath: New path for the content at the current path.
+    public func move(to newPath: FilePath) throws {
+        try self.withPlatformString { sourceCString in
+            try newPath.withPlatformString { targetCString in
+                if system_rename(sourceCString, targetCString) != 0 {
+                    throw Errno(rawValue: system_errno)
+                }
+            }
+        }
+    }
 }

@@ -111,3 +111,13 @@ func system_chmod(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop
     chmod(path, mode)
 }
 #endif
+
+#if os(Windows)
+func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: UnsafePointer<CInterop.PlatformChar>) -> CInt {
+    _wrename(source, target)
+}
+#else
+func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: UnsafePointer<CInterop.PlatformChar>) -> CInt {
+    rename(source, target)
+}
+#endif
