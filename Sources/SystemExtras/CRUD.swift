@@ -40,6 +40,7 @@ extension FilePath {
     /// - Parameter recursive: `true` means content of non-empty directory will be deleted along
     ///                        with the directory itself.
     public func delete(recursive: Bool = false) throws {
+        print("\(self)")
         guard let meta = try? self.metadata() else {
             return // file doesn't exist
         }
@@ -47,7 +48,6 @@ extension FilePath {
         if meta.fileType.isDirectory {
             if recursive {
                 for child in self.directoryContent() {
-                    print("\(child.0)")
                     try child.0.delete(recursive: true)
                 }
             }
