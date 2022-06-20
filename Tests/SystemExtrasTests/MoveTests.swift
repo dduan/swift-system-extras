@@ -55,9 +55,7 @@ final class MoveTests: XCTestCase {
             XCTAssert(cInAPath.exists())
             XCTAssertFalse(bDirectoryPath.exists())
 
-            print(">>> before move")
             try aDirectoryPath.move(to: bDirectoryPath)
-            print(">>> after move")
 
             XCTAssertFalse(aDirectoryPath.exists())
             XCTAssertFalse(cInAPath.exists())
@@ -67,7 +65,6 @@ final class MoveTests: XCTestCase {
             XCTAssert(try bDirectoryPath.metadata().fileType.isDirectory)
             let content = try cInBPath.readUTF8String()
             XCTAssertEqual(content, expectedContent)
-            print(">>> everything went well in temporary directory")
         }
     }
 }
