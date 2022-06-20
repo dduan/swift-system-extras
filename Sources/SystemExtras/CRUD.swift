@@ -71,9 +71,17 @@ extension FilePath {
     public func move(to newPath: FilePath) throws {
         try self.withPlatformString { sourceCString in
             try newPath.withPlatformString { targetCString in
-                if system_rename(sourceCString, targetCString) != 0 {
+#if os(Windows)
+                if !MoveFileW(sourceCString, targetCString) {
+                    let _ = GetLastError()
+                    // TODO: map WinAPI error to errno when Swift Systems does
+                    throw Errno(rawValue: -1)
+                }
+#else
+                if rename(sourceCString, targetCString) != 0 {
                     throw Errno(rawValue: system_errno)
                 }
+#endif
             }
         }
     }
