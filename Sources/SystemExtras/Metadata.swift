@@ -1,6 +1,7 @@
 import SystemPackage
 
 public struct FileMetadata {
+  // TODO: Document the fact that on Windows these permissions aren't always effective as they are on Unix.
   public let permissions: FilePermissions
   public let fileType: FileType
   public let size: Int

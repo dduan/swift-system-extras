@@ -51,14 +51,33 @@ extension FilePath {
                 }
             }
 
-            try self.withPlatformString { cString in
-                if system_rmdir(cString) != 0 {
+            // On Windows, we can't rely on the OS to think all children have been deleted at this point.
+            // The only way to convince the os is to move the directory to another location first.
+            let randomName = "\(UInt64.random(in: 0 ... .max))"
+            let tempLocation = FilePath.defaultTemporaryDirectory.appending(randomName)
+            try self.move(to: tempLocation)
+
+            try tempLocation.withPlatformString { tempCString in
+                if system_rmdir(tempCString) != 0 {
                     throw Errno(rawValue: system_errno)
                 }
             }
         } else {
             try self.withPlatformString { cString in
                 if system_unlink(cString) != 0 {
+                    throw Errno(rawValue: system_errno)
+                }
+            }
+        }
+    }
+
+    /// Move a file or direcotry to a new path. If the destination already exist, write over it.
+    ///
+    /// - Parameter newPath: New path for the content at the current path.
+    public func move(to newPath: FilePath) throws {
+        try self.withPlatformString { sourceCString in
+            try newPath.withPlatformString { targetCString in
+                if system_rename(sourceCString, targetCString) != 0 {
                     throw Errno(rawValue: system_errno)
                 }
             }
