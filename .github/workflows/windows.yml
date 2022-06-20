@@ -6,14 +6,23 @@ jobs:
   Windows:
     name: Windows
     runs-on: windows-2019
+    env:
+      SWIFT_RELEASE: 5.6.1-RELEASE
     steps:
     - name: Check out
       uses: actions/checkout@v2
+    - name: Cache Swift Installation
+      id: cache-swift-installation
+      uses: actions/cache@v3
+      with:
+        path: C:\Library\Developer\Toolchains
+        key: ${{ env.SWIFT_RELEASE }}
     - name: Install Swift
+      if: steps.cache-swift-installation.outputs.cache-hit != 'true'
       uses: compnerd/gha-setup-swift@main
       with:
-        branch: swift-5.6.1-release
-        tag: 5.6.1-RELEASE
+        branch: swift-${{ env.SWIFT_RELEASE }}
+        tag: ${{ env.SWIFT_RELEASE }}
     - name: Test
       shell: cmd
       run: |
