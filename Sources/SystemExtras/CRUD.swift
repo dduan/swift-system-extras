@@ -44,7 +44,6 @@ extension FilePath {
             return // file doesn't exist
         }
 
-        print("\(self) isDirectory: \(meta.fileType.isDirectory)")
         if meta.fileType.isDirectory {
             if recursive {
                 for child in self.directoryContent() {
