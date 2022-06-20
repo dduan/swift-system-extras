@@ -116,6 +116,7 @@ func system_chmod(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop
 #if os(Windows)
 func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: UnsafePointer<CInterop.PlatformChar>) -> CInt {
     if !MoveFileW(source, target) {
+        print(">>>")
         let _ = GetLastError()
         // TODO: map WinAPI error to errno when Swift Systems does
         return -1
@@ -125,7 +126,6 @@ func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: Uns
 }
 #else
 func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: UnsafePointer<CInterop.PlatformChar>) -> CInt {
-    print(">>>")
-    return rename(source, target)
+    rename(source, target)
 }
 #endif
