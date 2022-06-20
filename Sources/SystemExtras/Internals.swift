@@ -4,6 +4,7 @@ import Darwin
 import Glibc
 #elseif os(Windows)
 import ucrt
+import WinSDK
 #else
 #error("Unsupported Platform")
 #endif
@@ -114,7 +115,13 @@ func system_chmod(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop
 
 #if os(Windows)
 func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: UnsafePointer<CInterop.PlatformChar>) -> CInt {
-    _wrename(source, target)
+    if !MoveFileW(source, target) {
+        let _ = GetLastError()
+        // TODO: map WinAPI error to errno when Swift Systems does
+        return -1
+    }
+
+    return 0
 }
 #else
 func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: UnsafePointer<CInterop.PlatformChar>) -> CInt {
