@@ -40,11 +40,11 @@ extension FilePath {
     /// - Parameter recursive: `true` means content of non-empty directory will be deleted along
     ///                        with the directory itself.
     public func delete(recursive: Bool = false) throws {
-        print("\(self)")
         guard let meta = try? self.metadata() else {
             return // file doesn't exist
         }
 
+        print("\(self) isDirectory: \(meta.fileType.isDirectory)")
         if meta.fileType.isDirectory {
             if recursive {
                 for child in self.directoryContent() {
@@ -53,6 +53,7 @@ extension FilePath {
             }
 
             try self.withPlatformString { cString in
+                print("trying to delete directory \(self)")
                 if system_rmdir(cString) != 0 {
                     throw Errno(rawValue: system_errno)
                 }
