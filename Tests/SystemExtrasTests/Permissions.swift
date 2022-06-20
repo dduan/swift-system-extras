@@ -3,7 +3,7 @@ import SystemPackage
 import XCTest
 
 final class PermissionsTests: XCTestCase {
-    @available(macOS 12, *)
+#if !os(Windows)
     func testSettingPermissions() throws {
         try FilePath.withTemporaryDirectory { temp in
             let file = temp.pushing("a")
@@ -15,4 +15,5 @@ final class PermissionsTests: XCTestCase {
             XCTAssertFalse(newPermissions.contains(.ownerWrite))
         }
     }
+#endif // !os(Windows)
 }
