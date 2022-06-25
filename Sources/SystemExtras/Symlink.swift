@@ -77,7 +77,11 @@ extension FilePath {
 
                     return withUnsafePointer(to: data) {
                         $0.withMemoryRebound(to: [UInt16].self, capacity: data.count / 2) { wideData in
-                            FilePath(platformString: Array(wideData.pointee[nameStartingPoint ..< (nameStartingPoint + nameLength)]) + [0])
+                            let platformString = Array(wideData.pointee[nameStartingPoint ..< (nameStartingPoint + nameLength)])
+                            print(platformString.count)
+                            let result = FilePath(platformString: platformString + [0])
+                            print(result)
+                            return result
                         }
                     }
                 }
