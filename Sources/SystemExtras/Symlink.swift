@@ -2,6 +2,7 @@ import SystemPackage
 
 #if os(Windows)
 import WinSDK
+extension FilePath {
     public func readSymlink() throws -> FilePath {
         // Warning: intense Windows/C wacky-ness ahead.
         //
@@ -76,5 +77,6 @@ import WinSDK
             }
         }
     }
+}
 #else // os(Windows)
 #endif // os(Windows)
