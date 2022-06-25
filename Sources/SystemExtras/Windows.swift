@@ -1,5 +1,6 @@
 #if os(Windows)
 import SystemPackage
+import WinSDK
 extension FilePath {
     func withHandle<Output>(access: Int32, diposition: Int32, attributes: Int32, run action: (HANDLE?) throws -> Output) throws -> Output {
         try self.withPlatformString { cString in
