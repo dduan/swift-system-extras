@@ -3,15 +3,29 @@ import SystemPackage
 import XCTest
 
 final class PermissionsTests: XCTestCase {
-#if !os(Windows)
+#if os(Windows)
     func testSettingPermissions() throws {
         try FilePath.withTemporaryDirectory { temp in
             let file = temp.pushing("a")
             try file.write(utf8: "hello")
-            let oldPermissions = try file.metadata().permissions
+            let oldPermissions = try file.metadata().permissions as! WindowsAttributes
+            XCTAssertFalse(oldPermissions.contains(.readOnly))
+            try file.set(oldPermissions.union([.readOnly]))
+            let newPermissions = try file.metadata().permissions as! WindowsAttributes
+            XCTAssert(newPermissions.contains(.readOnly))
+            // Restore the write permission so we can clean it up
+            try file.set(oldPermissions)
+        }
+    }
+#else
+    func testSettingPermissions() throws {
+        try FilePath.withTemporaryDirectory { temp in
+            let file = temp.pushing("a")
+            try file.write(utf8: "hello")
+            let oldPermissions = try file.metadata().permissions as! FilePermissions
             XCTAssert(oldPermissions.contains(.ownerWrite))
-            try file.set(posix: oldPermissions.subtracting([.ownerWrite]))
-            let newPermissions = try file.metadata().permissions
+            try file.set(oldPermissions.subtracting([.ownerWrite]))
+            let newPermissions = try file.metadata().permissions as! FilePermissions
             XCTAssertFalse(newPermissions.contains(.ownerWrite))
         }
     }

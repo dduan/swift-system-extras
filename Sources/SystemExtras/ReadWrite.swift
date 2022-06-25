@@ -35,9 +35,9 @@ extension FilePath {
             return []
         }
 
-        let requestSize = meta.size - Int(offset)
+        let requestSize = meta.size - Int64(offset)
         return try self.whileOpen(.readOnly) { fd in
-            try Array(unsafeUninitializedCapacity: requestSize) { buffer, count in
+            try Array(unsafeUninitializedCapacity: Int(requestSize)) { buffer, count in
                 count = try fd.read(fromAbsoluteOffset: offset, into: UnsafeMutableRawBufferPointer(buffer))
             }
         }

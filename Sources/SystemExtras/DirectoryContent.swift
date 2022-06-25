@@ -66,7 +66,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
                 queue.append(path)
             }
 
-            return(path, FileType(data: data))
+            return(path, FileType(data))
         }
 
         var data = WIN32_FIND_DATAW()
@@ -139,7 +139,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
                 return next()
             }
 
-            let fileType = FileType(dirEntry: entry)
+            let fileType = FileType(entry)
             let path = currentPath.appending(name)
 
             if recursive && fileType.isDirectory {

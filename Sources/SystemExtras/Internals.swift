@@ -35,10 +35,6 @@ internal var system_errno: CInt {
 #endif
 
 #if os(Windows)
-typealias system_stat_struct = _stat64i32
-func system_stat(_ path: UnsafePointer<CInterop.PlatformChar>, _ result: inout _stat64i32) -> CInt {
-  _wstat64i32(path, &result)
-} 
 #else
 typealias system_stat_struct = stat
 func system_stat(_ path: UnsafePointer<CInterop.PlatformChar>, _ result: inout stat) -> CInt {
@@ -104,9 +100,6 @@ func system_unlink(_ path: UnsafePointer<CInterop.PlatformChar>) -> CInt {
 #endif
 
 #if os(Windows)
-func system_chmod(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop.Mode) -> CInt {
-    _wchmod(path, mode)
-}
 #else
 func system_chmod(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop.Mode) -> CInt {
     chmod(path, mode)
