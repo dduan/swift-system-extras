@@ -60,10 +60,13 @@ extension FilePath {
             }
 
             return try withUnsafePointer(to: data) {
-                try $0.withMemoryRebound(to: ReparseDataBuffer.self, capacity: 1) { reparseData -> FilePath in
-                    let reparseData = reparseData.pointee
+                try $0.withMemoryRebound(to: [ReparseDataBuffer].self, capacity: 1) { reparseDataBuffer -> FilePath in
+                    guard let reparseData = reparseDataBuffer.pointee.first else {
+                        throw Errno(rawValue: -1)
+                    }
 
                     let nameStartingPoint: Int
+                    print("reparseData.substituteNameLength", reparseData.substituteNameLength)
                     let nameLength = Int(reparseData.substituteNameLength) / MemoryLayout<CInterop.PlatformChar>.stride
                     if reparseData.reparseTag == IO_REPARSE_TAG_SYMLINK {
                         nameStartingPoint = (MemoryLayout<SymbolicLinkReparseBuffer>.stride - 4) / 2
