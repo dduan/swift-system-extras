@@ -1,7 +1,7 @@
 import SystemPackage
 
 #if os(Windows)
-    public func readSymlink() throws -> Path {
+    public func readSymlink() throws -> FilePath {
         // Warning: intense Windows/C wacky-ness ahead.
         //
         // DeviceIoControl returns multiple type of structs, depending on which one you ask for via one of
