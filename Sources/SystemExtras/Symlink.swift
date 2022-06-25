@@ -61,9 +61,7 @@ extension FilePath {
 
             return try withUnsafePointer(to: data) {
                 try $0.withMemoryRebound(to: ReparseDataBuffer.self, capacity: 1) { reparseData -> FilePath in
-                    guard let reparseData = reparseData.pointee else {
-                        throw Errno(rawValue: -1)
-                    }
+                    let reparseData = reparseData.pointee
 
                     let nameStartingPoint: Int
                     let nameLength = Int(reparseData.substituteNameLength) / MemoryLayout<CInterop.PlatformChar>.stride
