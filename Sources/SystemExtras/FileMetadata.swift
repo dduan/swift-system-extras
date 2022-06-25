@@ -6,7 +6,7 @@ import WinSDK
 public struct FileMetadata {
     public let permissions: Permissions
     public let fileType: FileType
-    public let size: Int
+    public let size: Int64
 
 #if os(Windows)
     init(_ data: WIN32_FIND_DATAW) {
@@ -20,9 +20,9 @@ public struct FileMetadata {
         self.permissions = FilePermissions(rawValue: mode & 0o7777)
         self.fileType = FileType(rawMode: mode)
 #if os(Linux)
-        self.size = status.st_size
+        self.size = Int64(status.st_size)
 #else
-        self.size = Int(status.st_size)
+        self.size = Int64(status.st_size)
 #endif
     }
 #endif
@@ -32,7 +32,7 @@ extension FilePath {
 #if os(Windows)
     public func metadata() throws -> Metadata {
         var data = WIN32_FIND_DATAW()
-        self.withPlatformString { cString in
+        try self.withPlatformString { cString in
             let handle = FindFirstFileW(cString, &data)
             if handle == INVALID_HANDLE_VALUE {
                 // TODO: Map windows error to errno
