@@ -67,6 +67,7 @@ extension FilePath {
 
                     let nameStartingPoint: Int
                     print("reparseData.substituteNameLength", reparseData.substituteNameLength)
+                    print("reparseData", reparseData)
                     let nameLength = Int(reparseData.substituteNameLength) / MemoryLayout<CInterop.PlatformChar>.stride
                     if reparseData.reparseTag == IO_REPARSE_TAG_SYMLINK {
                         nameStartingPoint = (MemoryLayout<SymbolicLinkReparseBuffer>.stride - 4) / 2
