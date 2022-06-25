@@ -72,7 +72,7 @@ extension FilePath {
     /// - Parameter permissions: The new file permission.
     public func set(_ permissions: WindowsAttributes) throws {
         try self.withPlatformString { cString in
-            if !SetFileAttributesW(cString, windowsAttributes.rawValue) {
+            if !SetFileAttributesW(cString, permissions.rawValue) {
                 // TODO: Map windows error to errno
                 throw Errno(rawValue: -1)
             }
