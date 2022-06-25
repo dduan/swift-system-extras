@@ -18,7 +18,7 @@ public struct FileMetadata {
     init(_ status: system_stat_struct) {
         let mode = CInterop.Mode(status.st_mode)
         self.permissions = FilePermissions(rawValue: mode & 0o7777)
-        self.fileType = FileType(rawMode: mode)
+        self.fileType = FileType(mode)
 #if os(Linux)
         self.size = Int64(status.st_size)
 #else
@@ -30,7 +30,7 @@ public struct FileMetadata {
 
 extension FilePath {
 #if os(Windows)
-    public func metadata() throws -> Metadata {
+    public func metadata() throws -> FileMetadata {
         var data = WIN32_FIND_DATAW()
         try self.withPlatformString { cString in
             let handle = FindFirstFileW(cString, &data)

@@ -16,7 +16,7 @@ public struct FileType {
     public let isDirectory: Bool
     public let isSymlink: Bool
 
-    init(rawMode: CInterop.Mode) {
+    init(_ rawMode: CInterop.Mode) {
         let masked = rawMode & S_IFMT
         self.isFile = masked == S_IFREG
         self.isDirectory = masked == S_IFDIR
@@ -28,13 +28,13 @@ public struct FileType {
     }
 
 #if os(Windows)
-    init(data: WIN32_FIND_DATAW) {
+    init(_ data: WIN32_FIND_DATAW) {
         self.isDirectory = data.dwFileAttributes & UInt32(bitPattern: FILE_ATTRIBUTE_DIRECTORY) != 0
         self.isSymlink = data.dwFileAttributes & UInt32(bitPattern: FILE_ATTRIBUTE_REPARSE_POINT) != 0 && data.dwReserved0 & 0x2000_0000 != 0
         self.isFile = !isDirectory
     }
 #else
-    init(dirEntry: dirent) {
+    init(_ dirEntry: dirent) {
         let dType = dirEntry.d_type
         self.isFile = dType == DT_REG
         self.isDirectory = dType == DT_DIR

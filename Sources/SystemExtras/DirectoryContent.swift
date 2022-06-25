@@ -139,7 +139,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
                 return next()
             }
 
-            let fileType = FileType(dirEntry: entry)
+            let fileType = FileType(entry)
             let path = currentPath.appending(name)
 
             if recursive && fileType.isDirectory {
