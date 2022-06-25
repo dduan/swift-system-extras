@@ -25,14 +25,14 @@ extension FilePath {
                 continue
             }
 
-            if let meta = try? path.metadata(), meta.permissions.contains(.ownerWrite) {
+            if let meta = try? path.metadata(), !meta.permissions.isReadOnly {
                 return path
             }
         }
 
         for tmpPath in ["/tmp", "/var/tmp", "/usr/tmp"] {
             let path = tmpPath.withPlatformString(FilePath.init(platformString:))
-            if let meta = try? path.metadata(), meta.permissions.contains(.ownerWrite) {
+            if let meta = try? path.metadata(), !meta.permissions.isReadOnly {
                 return path
             }
         }
@@ -45,7 +45,7 @@ extension FilePath {
                 continue
             }
 
-            if let meta = try? path.metadata(), meta.permissions.contains(.ownerWrite) {
+            if let meta = try? path.metadata(), !meta.permissions.isReadOnly {
                 return path
             }
         }

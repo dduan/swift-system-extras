@@ -9,21 +9,15 @@ extension String {
 
 do {
     for child in FilePath(CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : ".").directoryContent() {
-        var permissionString = ""
+        var typeString: String = ""
         let meta = try child.0.metadata()
-        let permissions = meta.permissions
-        permissionString += meta.fileType.isDirectory ? "d" : "-"
-        permissionString += permissions.contains(.ownerRead) ? "r" : "-"
-        permissionString += permissions.contains(.ownerWrite) ? "w" : "-"
-        permissionString += permissions.contains(.ownerExecute) ? "x" : "-"
-        permissionString += permissions.contains(.groupRead) ? "r" : "-"
-        permissionString += permissions.contains(.groupWrite) ? "w" : "-"
-        permissionString += permissions.contains(.groupExecute) ? "x" : "-"
-        permissionString += permissions.contains(.otherRead) ? "r" : "-"
-        permissionString += permissions.contains(.otherWrite) ? "w" : "-"
-        permissionString += permissions.contains(.otherExecute) ? "x" : "-"
+
+        typeString += meta.fileType.isDirectory ? "d" : "-"
+        typeString += meta.fileType.isFile ? "f" : "-"
+        typeString += meta.fileType.isSymlink ? "l" : "-"
+        typeString += meta.permissions.isReadOnly ? "-" : "w"
         let sizeString = "\(meta.size)".withLeftPad(10)
-        print("\(permissionString) \(sizeString) \(child.0)")
+        print("\(typeString) \(sizeString) \(child.0)")
     }
 } catch {
     print(error)
