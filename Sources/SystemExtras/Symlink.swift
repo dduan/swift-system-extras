@@ -47,7 +47,7 @@ extension FilePath {
                     &size,
                     nil
                 ) {
-                    throw SystemError(code: 0x0000_00DE)
+                    throw Errno(rawValue: -1)
                 }
                 count = Int(size)
             }
