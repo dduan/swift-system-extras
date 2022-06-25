@@ -30,9 +30,10 @@ public struct FileMetadata {
 
 extension FilePath {
 #if os(Windows)
-    public func metadata() throws -> FileMetadata {
+    public func metadata(followSymlink: Bool = false) throws -> FileMetadata {
+        let path = try followSymlink ? self.windowsFinalName() : self
         var data = WIN32_FIND_DATAW()
-        try self.withPlatformString { cString in
+        try path.withPlatformString { cString in
             let handle = FindFirstFileW(cString, &data)
             if handle == INVALID_HANDLE_VALUE {
                 // TODO: Map windows error to errno
@@ -45,10 +46,11 @@ extension FilePath {
         return FileMetadata(data)
     }
 #else
-    public func metadata() throws -> FileMetadata {
+    public func metadata(followSymlink: Bool = false) throws -> FileMetadata {
         var status = system_stat_struct()
+        let anyStat = followSymlink ? system_stat : system_lstat
         try self.withPlatformString { cString in
-            if system_stat(cString, &status) != 0 {
+            if anyStat(cString, &status) != 0 {
                 throw Errno(rawValue: system_errno)
             }
         }
