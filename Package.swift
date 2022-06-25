@@ -14,10 +14,12 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-system", from: "1.0.0"),
     ],
     targets: [
+        .target(name: "CSystemExtras"),
         .target(
             name: "SystemExtras",
             dependencies: [
                 .product(name: "SystemPackage", package: "swift-system"),
+                .target(name: "CSystemExtras"),
             ],
             cSettings: [
                 .define("_CRT_SECURE_NO_WARNINGS")
