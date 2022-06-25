@@ -50,7 +50,7 @@ public struct WindowsAttributes: OptionSet {
     /// it. This attribute is not honored on directories. For more information, see You cannot view
     /// or change the Read-only or the System attributes of folders in Windows Server 2003, in
     /// Windows XP, in Windows Vista or in Windows 7.
-    public static let readonly = WindowsAttributes(rawValue: DWORD(FILE_ATTRIBUTE_READONLY))
+    public static let readOnly = WindowsAttributes(rawValue: DWORD(FILE_ATTRIBUTE_READONLY))
     /// When this attribute is set, it means that the file or directory is not fully present
     /// locally. For a file that means that not all of its data is on local storage (e.g. it may be
     /// sparse with some data still in remote storage). For a directory it means that some of the
@@ -83,14 +83,14 @@ public struct WindowsAttributes: OptionSet {
 extension WindowsAttributes: Permissions {
     public var isReadOnly: Bool {
         get {
-            contains(.readonly)
+            contains(.readOnly)
         }
 
         set {
             if newValue {
-                insert(.readonly)
+                insert(.readOnly)
             } else {
-                remove(.readonly)
+                remove(.readOnly)
             }
         }
     }

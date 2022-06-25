@@ -70,7 +70,11 @@ extension FilePath {
     /// Set new permissions for a file path.
     ///
     /// - Parameter permissions: The new file permission.
-    public func set(_ permissions: WindowsAttributes) throws {
+    public func set(_ permissions: Permissions) throws {
+        guard let permissions = permissions as? WindowsAttributes else {
+            fatalError("Attempting to set unix FilePermissions on Windows")
+        }
+
         try self.withPlatformString { cString in
             if !SetFileAttributesW(cString, permissions.rawValue) {
                 // TODO: Map windows error to errno
@@ -82,7 +86,11 @@ extension FilePath {
     /// Set new permissions for a file path.
     ///
     /// - Parameter permissions: The new file permission.
-    public func set(_ permissions: FilePermissions) throws {
+    public func set(_ permissions: Permissions) throws {
+        guard let permissions = permissions as? FilePermissions else {
+            fatalError("Attempting to set Windows Attributes on Unix")
+        }
+
         try self.withPlatformString { cString in
             if system_chmod(cString, permissions.rawValue) != 0 {
                 throw Errno(rawValue: system_errno)
