@@ -68,11 +68,12 @@ extension FilePath {
                     let nameStartingPoint: Int
                     print("reparseData.substituteNameLength", reparseData.substituteNameLength)
                     print("reparseData", reparseData)
-                    let nameLength = Int(reparseData.substituteNameLength) / MemoryLayout<CInterop.PlatformChar>.stride
+                    let nameLength = Int(reparseData.printNameLength) / MemoryLayout<CInterop.PlatformChar>.stride
+                    let nameOffset = Int(reparseData.printNameOffset)
                     if reparseData.reparseTag == IO_REPARSE_TAG_SYMLINK {
-                        nameStartingPoint = (MemoryLayout<SymbolicLinkReparseBuffer>.stride - 4) / 2
+                        nameStartingPoint = (MemoryLayout<SymbolicLinkReparseBuffer>.stride - 4 + nameOffset) / MemoryLayout<CInterop.PlatformChar>.stride
                     } else if reparseData.reparseTag == IO_REPARSE_TAG_MOUNT_POINT {
-                        nameStartingPoint = (MemoryLayout<MountPointReparseBuffer>.stride - 4) / 2
+                        nameStartingPoint = (MemoryLayout<MountPointReparseBuffer>.stride - 4 + nameOffset) / MemoryLayout<CInterop.PlatformChar>.stride
                     } else {
                         throw Errno(rawValue: -1)
                     }
