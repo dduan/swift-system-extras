@@ -108,4 +108,30 @@ extension FilePath {
         return FilePath(platformString: nullTerminated)
 #endif // os(Windows)
     }
+
+    /// Create a symbolic link to self at `path`.
+    ///
+    /// - Parameter path: The path at which to create the symlink.
+    public func makeSymlink(at path: FilePath) throws {
+#if os(Windows)
+        let flag: DWORD = try metadata().fileType.isDirectory
+            ? DWORD(SYMBOLIC_LINK_FLAG_DIRECTORY)
+            : 0
+        try self.withPlatformString { selfCString in
+            try path.withPlatformString { pathCString in
+                if CreateSymbolicLinkW(pathCString, selfCString, flag) == 0 {
+                    throw Errno(rawValue: -1)
+                }
+            }
+        }
+#else // os(Windows)
+        try self.withPlatformString { selfCString in
+            try path.withPlatformString { pathCString in
+                if system_symlink(selfCString, pathCString) != 0 {
+                    throw Errno(rawValue: system_errno)
+                }
+            }
+        }
+#endif // os(Windows)
+    }
 }

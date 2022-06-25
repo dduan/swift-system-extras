@@ -118,6 +118,10 @@ enum Constants {
 func system_readlink(_ path: UnsafePointer<CInterop.PlatformChar>, _ buffer: UnsafeMutablePointer<CInterop.PlatformChar>, _ size: Int) -> Int {
     readlink(path, buffer, size)
 }
+
+func system_symlink(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: UnsafePointer<CInterop.PlatformChar>) -> CInt {
+    symlink(source, target)
+}
 #endif
 
 #if os(Windows)
