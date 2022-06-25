@@ -10,11 +10,11 @@ final class PermissionsTests: XCTestCase {
             try file.write(utf8: "hello")
             let oldPermissions = try file.metadata().permissions as! WindowsAttributes
             XCTAssertFalse(oldPermissions.contains(.readOnly))
-            print(">>>")
             try file.set(oldPermissions.union([.readOnly]))
-            print("<<<")
             let newPermissions = try file.metadata().permissions as! WindowsAttributes
             XCTAssert(newPermissions.contains(.readOnly))
+            // Restore the write permission so we can clean it up
+            try file.set(oldPermissions)
         }
     }
 #else
