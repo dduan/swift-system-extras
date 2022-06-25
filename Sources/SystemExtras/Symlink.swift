@@ -3,8 +3,14 @@ import SystemPackage
 
 #if os(Windows)
 import WinSDK
+#endif // os(Windows)
+
 extension FilePath {
+    /// Create a symbolic link to `self`.
+    ///
+    /// - Parameter path: The path at which to create the symlink.
     public func readSymlink() throws -> FilePath {
+#if os(Windows)
         // Warning: intense Windows/C wacky-ness ahead.
         //
         // DeviceIoControl returns multiple type of structs, depending on which one you ask for via one of
@@ -77,14 +83,8 @@ extension FilePath {
                 }
             }
         }
-    }
-}
+
 #else // os(Windows)
-extension FilePath {
-    /// Return a path to which a symbolic link points to.
-    ///
-    /// - Returns: The target path of the symlink.
-    public func readSymlink() throws -> FilePath {
         guard try self.metadata().fileType.isSymlink else {
             return self
         }
@@ -106,6 +106,6 @@ extension FilePath {
         }
 
         return FilePath(platformString: nullTerminated)
+#endif // os(Windows)
     }
 }
-#endif // os(Windows)
