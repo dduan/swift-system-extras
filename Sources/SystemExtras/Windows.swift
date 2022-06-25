@@ -25,7 +25,8 @@ extension FilePath {
             return try action(handle)
         }
     }
-    private func finalName() throws -> Self {
+
+    func windowsFinalName() throws -> Self {
         try withHandle(
             access: 0,
             diposition: OPEN_EXISTING,

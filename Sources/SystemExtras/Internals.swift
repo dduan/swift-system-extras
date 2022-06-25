@@ -40,6 +40,9 @@ typealias system_stat_struct = stat
 func system_stat(_ path: UnsafePointer<CInterop.PlatformChar>, _ result: inout stat) -> CInt {
   stat(path, &result)
 }
+func system_lstat(_ path: UnsafePointer<CInterop.PlatformChar>, _ result: inout stat) -> CInt {
+  lstat(path, &result)
+}
 #endif
 
 #if os(Windows)
