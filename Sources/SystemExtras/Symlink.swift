@@ -1,6 +1,7 @@
 import SystemPackage
 
 #if os(Windows)
+import WinSDK
     public func readSymlink() throws -> FilePath {
         // Warning: intense Windows/C wacky-ness ahead.
         //
