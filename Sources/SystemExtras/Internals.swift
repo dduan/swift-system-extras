@@ -110,6 +110,17 @@ func system_chmod(_ path: UnsafePointer<CInterop.PlatformChar>, _ mode: CInterop
 #endif
 
 #if os(Windows)
+#else
+enum Constants {
+    static let maxPathLength = Int(PATH_MAX)
+}
+
+func system_readlink(_ path: UnsafePointer<CInterop.PlatformChar>, _ buffer: UnsafeMutablePointer<CInterop.PlatformChar>, _ size: Int) -> Int {
+    readlink(path, buffer, size)
+}
+#endif
+
+#if os(Windows)
 func system_rename(_ source: UnsafePointer<CInterop.PlatformChar>, _ target: UnsafePointer<CInterop.PlatformChar>) -> CInt {
     if !MoveFileW(source, target) {
         let _ = GetLastError()

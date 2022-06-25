@@ -80,4 +80,32 @@ extension FilePath {
     }
 }
 #else // os(Windows)
+extension FilePath {
+    /// Return a path to which a symbolic link points to.
+    ///
+    /// - Returns: The target path of the symlink.
+    public func readSymlink() throws -> FilePath {
+        guard try self.metadata().fileType.isSymlink else {
+            return self
+        }
+
+        let nullTerminated = try Array<CInterop.PlatformChar>(
+            unsafeUninitializedCapacity: Constants.maxPathLength + 1
+        ) { buffer, count in
+            try self.withPlatformString { cString in
+                let length = Int(
+                    system_readlink(cString, buffer.baseAddress!, Constants.maxPathLength)
+                )
+                if length == -1 {
+                    throw Errno(rawValue: system_errno)
+                }
+
+                buffer[length] = 0
+                count = length + 1
+            }
+        }
+
+        return FilePath(platformString: nullTerminated)
+    }
+}
 #endif // os(Windows)
