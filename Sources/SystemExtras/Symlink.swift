@@ -54,7 +54,7 @@ extension FilePath {
             }
 
             return try withUnsafePointer(to: data) {
-                try $0.withMemoryRebound(to: [ReparseDataBuffer].self, capacity: 1) { reparseDataBuffer -> Path in
+                try $0.withMemoryRebound(to: [ReparseDataBuffer].self, capacity: 1) { reparseDataBuffer -> FilePath in
                     guard let reparseData = reparseDataBuffer.pointee.first else {
                         throw Errno(rawValue: -1)
                     }
