@@ -66,18 +66,25 @@ extension FilePath {
                     }
 
                     let nameStartingPoint: Int
-                    let nameLength = Int(reparseData.substituteNameLength) / MemoryLayout<CInterop.PlatformChar>.stride
+                    print("reparseData.substituteNameLength", reparseData.substituteNameLength)
+                    print("reparseData", reparseData)
+                    let nameLength = Int(reparseData.printNameLength) / MemoryLayout<CInterop.PlatformChar>.stride
+                    let nameOffset = Int(reparseData.printNameOffset)
                     if reparseData.reparseTag == IO_REPARSE_TAG_SYMLINK {
-                        nameStartingPoint = (MemoryLayout<SymbolicLinkReparseBuffer>.stride - 4) / 2
+                        nameStartingPoint = (MemoryLayout<SymbolicLinkReparseBuffer>.stride - 4 + nameOffset) / MemoryLayout<CInterop.PlatformChar>.stride
                     } else if reparseData.reparseTag == IO_REPARSE_TAG_MOUNT_POINT {
-                        nameStartingPoint = (MemoryLayout<MountPointReparseBuffer>.stride - 4) / 2
+                        nameStartingPoint = (MemoryLayout<MountPointReparseBuffer>.stride - 4 + nameOffset) / MemoryLayout<CInterop.PlatformChar>.stride
                     } else {
                         throw Errno(rawValue: -1)
                     }
 
                     return withUnsafePointer(to: data) {
                         $0.withMemoryRebound(to: [UInt16].self, capacity: data.count / 2) { wideData in
-                            FilePath(platformString: Array(wideData.pointee[nameStartingPoint ..< (nameStartingPoint + nameLength)]) + [0])
+                            let platformString = Array(wideData.pointee[nameStartingPoint ..< (nameStartingPoint + nameLength)])
+                            print(platformString.count)
+                            let result = FilePath(platformString: platformString + [0])
+                            print(result)
+                            return result
                         }
                     }
                 }
@@ -106,6 +113,32 @@ extension FilePath {
         }
 
         return FilePath(platformString: nullTerminated)
+#endif // os(Windows)
+    }
+
+    /// Create a symbolic link to self at `path`.
+    ///
+    /// - Parameter path: The path at which to create the symlink.
+    public func makeSymlink(at path: FilePath) throws {
+#if os(Windows)
+        let flag: DWORD = try metadata().fileType.isDirectory
+            ? DWORD(SYMBOLIC_LINK_FLAG_DIRECTORY)
+            : 0
+        try self.withPlatformString { selfCString in
+            try path.withPlatformString { pathCString in
+                if CreateSymbolicLinkW(pathCString, selfCString, flag) == 0 {
+                    throw Errno(rawValue: -1)
+                }
+            }
+        }
+#else // os(Windows)
+        try self.withPlatformString { selfCString in
+            try path.withPlatformString { pathCString in
+                if system_symlink(selfCString, pathCString) != 0 {
+                    throw Errno(rawValue: system_errno)
+                }
+            }
+        }
 #endif // os(Windows)
     }
 }
