@@ -60,7 +60,7 @@ extension FilePath {
                     }
 
                     let nameStartingPoint: Int
-                    let nameLength = Int(reparseData.substituteNameLength) / MemoryLayout<WindowsEncodingUnit>.stride
+                    let nameLength = Int(reparseData.substituteNameLength) / MemoryLayout<CInterop.PlatformChar>.stride
                     if reparseData.reparseTag == IO_REPARSE_TAG_SYMLINK {
                         nameStartingPoint = (MemoryLayout<SymbolicLinkReparseBuffer>.stride - 4) / 2
                     } else if reparseData.reparseTag == IO_REPARSE_TAG_MOUNT_POINT {
@@ -71,7 +71,7 @@ extension FilePath {
 
                     return withUnsafePointer(to: data) {
                         $0.withMemoryRebound(to: [UInt16].self, capacity: data.count / 2) { wideData in
-                            FilePath(platfromString: Array(wideData.pointee[nameStartingPoint ..< (nameStartingPoint + nameLength)]) + [0])
+                            FilePath(platformString: Array(wideData.pointee[nameStartingPoint ..< (nameStartingPoint + nameLength)]) + [0])
                         }
                     }
                 }
