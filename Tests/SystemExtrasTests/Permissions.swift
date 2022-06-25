@@ -8,10 +8,10 @@ final class PermissionsTests: XCTestCase {
         try FilePath.withTemporaryDirectory { temp in
             let file = temp.pushing("a")
             try file.write(utf8: "hello")
-            let oldPermissions = try file.metadata().permissions
+            let oldPermissions = try file.metadata().permissions as! FilePermissions
             XCTAssert(oldPermissions.contains(.ownerWrite))
-            try file.set(posix: oldPermissions.subtracting([.ownerWrite]))
-            let newPermissions = try file.metadata().permissions
+            try file.set(oldPermissions.subtracting([.ownerWrite]))
+            let newPermissions = try file.metadata().permissions as! FilePermissions
             XCTAssertFalse(newPermissions.contains(.ownerWrite))
         }
     }

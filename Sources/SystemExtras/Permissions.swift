@@ -22,3 +22,4 @@ extension FilePermissions: Permissions {
         }
     }
 }
+

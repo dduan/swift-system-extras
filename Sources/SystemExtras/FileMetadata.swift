@@ -62,7 +62,32 @@ extension FilePath {
   /// granted to retrieve metadata on the requested file, even if the path physically exists.
   ///
   /// - Returns: whether path refers to an existing path or an open file descriptor.
-  public func exists() -> Bool {
-    (try? self.metadata()) != nil
-  }
+    public func exists() -> Bool {
+        (try? self.metadata()) != nil
+    }
+
+#if os(Windows)
+    /// Set new permissions for a file path.
+    ///
+    /// - Parameter permissions: The new file permission.
+    public func set(_ permissions: WindowAttributes) throws {
+        try self.withPlatformString { cString in
+            if !SetFileAttributesW(cString, windowsAttributes.rawValue) {
+                // TODO: Map windows error to errno
+                throw Errno(rawValue: -1)
+            }
+        }
+    }
+#else
+    /// Set new permissions for a file path.
+    ///
+    /// - Parameter permissions: The new file permission.
+    public func set(_ permissions: FilePermissions) throws {
+        try self.withPlatformString { cString in
+            if system_chmod(cString, permissions.rawValue) != 0 {
+                throw Errno(rawValue: system_errno)
+            }
+        }
+    }
+#endif // os(Windows)
 }
