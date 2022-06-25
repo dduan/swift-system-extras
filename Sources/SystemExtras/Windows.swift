@@ -44,7 +44,7 @@ extension FilePath {
                 )
 
                 if length == 0 {
-                    throw Erron(rawValue: -1)
+                    throw Errno(rawValue: -1)
                 }
 
                 buffer[length] = 0
