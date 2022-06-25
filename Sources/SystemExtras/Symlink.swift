@@ -66,8 +66,6 @@ extension FilePath {
                     }
 
                     let nameStartingPoint: Int
-                    print("reparseData.substituteNameLength", reparseData.substituteNameLength)
-                    print("reparseData", reparseData)
                     let nameLength = Int(reparseData.printNameLength) / MemoryLayout<CInterop.PlatformChar>.stride
                     let nameOffset = Int(reparseData.printNameOffset)
                     if reparseData.reparseTag == IO_REPARSE_TAG_SYMLINK {
@@ -81,9 +79,7 @@ extension FilePath {
                     return withUnsafePointer(to: data) {
                         $0.withMemoryRebound(to: [UInt16].self, capacity: data.count / 2) { wideData in
                             let platformString = Array(wideData.pointee[nameStartingPoint ..< (nameStartingPoint + nameLength)])
-                            print(platformString.count)
                             let result = FilePath(platformString: platformString + [0])
-                            print(result)
                             return result
                         }
                     }
