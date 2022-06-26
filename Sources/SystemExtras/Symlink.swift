@@ -39,7 +39,7 @@ extension FilePath {
         // We use that information as well when reading from it.
         try withHandle(
             access: 0,
-            diposition: OPEN_EXISTING,
+            disposition: OPEN_EXISTING,
             attributes: FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS
         ) { handle in
             let data = try ContiguousArray<CChar>(unsafeUninitializedCapacity: 16 * 1024) { buffer, count in

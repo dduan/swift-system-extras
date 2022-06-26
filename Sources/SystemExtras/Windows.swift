@@ -2,14 +2,14 @@
 import SystemPackage
 import WinSDK
 extension FilePath {
-    func withHandle<Output>(access: Int32, diposition: Int32, attributes: Int32, run action: (HANDLE?) throws -> Output) throws -> Output {
+    func withHandle<Output>(access: Int32, disposition: Int32, attributes: Int32, run action: (HANDLE?) throws -> Output) throws -> Output {
         try self.withPlatformString { cString in
             let handle = CreateFileW(
                 cString,
                 DWORD(access),
                 0,
                 nil,
-                DWORD(diposition),
+                DWORD(disposition),
                 DWORD(attributes),
                 nil
             )
@@ -29,7 +29,7 @@ extension FilePath {
     func windowsFinalName() throws -> Self {
         try withHandle(
             access: 0,
-            diposition: OPEN_EXISTING,
+            disposition: OPEN_EXISTING,
             attributes: FILE_FLAG_BACKUP_SEMANTICS
         ) { handle in
             let platformString = try Array<CInterop.PlatformChar>(
