@@ -12,34 +12,39 @@ import WinSDK
 import SystemPackage
 
 extension FilePath {
-    public func directoryContent(recursive: Bool = false) -> DirectoryContent {
-        DirectoryContent(of: self, recursive: recursive)
+    public func directoryContent(recursive: Bool = false, followSymlink: Bool = false) -> DirectoryContent {
+        DirectoryContent(of: self, recursive: recursive, followSymlink: followSymlink)
     }
 }
 
 public struct DirectoryContent: Sequence {
     let directory: FilePath
     let recursive: Bool
+    let followSymlink: Bool
 
-    public init(of directory: FilePath, recursive: Bool = false) {
+    public init(of directory: FilePath, recursive: Bool = false, followSymlink: Bool = false) {
         self.directory = directory
         self.recursive = recursive
+        self.followSymlink = followSymlink
     }
 
     public func makeIterator() -> DirectoryContentIterator {
-        DirectoryContentIterator(queue: [directory], recursive: recursive)
+        DirectoryContentIterator(queue: [(directory, directory)], recursive: recursive, followSymlink: followSymlink)
     }
 }
 
-#if os(Windows)
 public final class DirectoryContentIterator: IteratorProtocol {
-    var queue: [FilePath]
+    var queue: [(FilePath, FilePath)] // (real, link)
     let recursive: Bool
-    init(queue: [FilePath], recursive: Bool) {
+    let followSymlink: Bool
+
+    init(queue: [(FilePath, FilePath)], recursive: Bool, followSymlink: Bool) {
         self.queue = queue
         self.recursive = recursive
+        self.followSymlink = followSymlink
     }
 
+#if os(Windows)
     deinit {
         if let handle = self.current?.handle {
             CloseHandle(handle)
@@ -98,17 +103,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
         }
         return next()
     }
-}
 #else
-public final class DirectoryContentIterator: IteratorProtocol {
-    var queue: [FilePath]
-    let recursive: Bool
-
-    init(queue: [FilePath], recursive: Bool) {
-        self.queue = queue
-        self.recursive = recursive
-    }
-
     deinit {
         if let handle = self.current?.handle {
             closedir(handle)
@@ -116,12 +111,12 @@ public final class DirectoryContentIterator: IteratorProtocol {
     }
 
 #if os(macOS)
-    var current: (handle: UnsafeMutablePointer<DIR>, path: FilePath)?
+    var current: (handle: UnsafeMutablePointer<DIR>, path: FilePath, logicalPath: FilePath)?
 #else
-    var current: (handle: OpaquePointer, path: FilePath)?
+    var current: (handle: OpaquePointer, path: FilePath, logicalPath: FilePath)?
 #endif
     public func next() -> (FilePath, FileType)? {
-        if let (handle, currentPath) = self.current {
+        if let (handle, currentPath, logicalPath) = self.current {
             guard let entry = readdir(handle)?.pointee else {
                 closedir(handle)
                 self.current = nil
@@ -142,20 +137,30 @@ public final class DirectoryContentIterator: IteratorProtocol {
             let fileType = FileType(entry)
             let path = currentPath.appending(name)
 
-            if recursive && fileType.isDirectory {
-                queue.append(path)
+            if recursive {
+                if fileType.isDirectory {
+                    queue.append((path, logicalPath.appending(name)))
+                } else if
+                    fileType.isSymlink,
+                    self.followSymlink,
+                    let link = try? path.readSymlink(),
+                    case let realPath = currentPath.pushing(link),
+                    (try? realPath.metadata().fileType.isDirectory) == true
+                {
+                    queue.append((realPath, path))
+                }
             }
 
-            return (path, fileType)
+            return (logicalPath.appending(name), fileType)
         } else {
             guard let nextPath = queue.first else {
                 return nil
             }
 
-            let handle = nextPath.withPlatformString { opendir($0) }
+            let handle = nextPath.0.withPlatformString { opendir($0) }
             let currentPath = queue.removeFirst()
             if let handle = handle {
-                self.current = (handle: handle, path: currentPath)
+                self.current = (handle: handle, path: currentPath.0, logicalPath: currentPath.1)
             } else {
                 self.current = nil
             }
@@ -163,5 +168,5 @@ public final class DirectoryContentIterator: IteratorProtocol {
             return next()
         }
     }
-}
 #endif
+}
