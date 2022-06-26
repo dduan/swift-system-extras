@@ -51,7 +51,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
         }
     }
 
-    var current: (handle: UnsafeMutableRawPointer, path: FilePath)?
+    var current: (handle: UnsafeMutableRawPointer, path: FilePath, logicalPath: FilePath)?
     public func next() -> (FilePath, FileType)? {
         func process(_ data: WIN32_FIND_DATAW) -> (FilePath, FileType)? {
             guard let name = withUnsafeBytes(of: data.cFileName, {
@@ -67,11 +67,12 @@ public final class DirectoryContentIterator: IteratorProtocol {
             }
 
             let path = self.current!.path.appending(name)
+            let type = FileType(data)
             if self.recursive {
-                queue.append(path)
+                queue.append((path, self.current!.logicalPath.appending(name)))
             }
 
-            return(path, FileType(data))
+            return(path, type)
         }
 
         var data = WIN32_FIND_DATAW()
