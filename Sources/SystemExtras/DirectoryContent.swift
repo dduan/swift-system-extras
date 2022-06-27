@@ -53,7 +53,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
 
     var current: (handle: UnsafeMutableRawPointer, path: FilePath, logicalPath: FilePath)?
     public func next() -> (FilePath, FileType)? {
-        func process(_ data: WIN32_FIND_DATAW, currentPath: FilePath, logicalCurrentPath: FilePath) -> (FilePath, FileType)? {
+        func process(_ data: WIN32_FIND_DATAW, _ currentPath: FilePath, _ logicalCurrentPath: FilePath) -> (FilePath, FileType)? {
             guard let name = withUnsafeBytes(of: data.cFileName, {
                 $0.bindMemory(to: CInterop.PlatformChar.self)
                     .baseAddress
