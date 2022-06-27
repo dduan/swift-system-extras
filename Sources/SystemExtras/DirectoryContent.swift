@@ -82,7 +82,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
                 }
             }
 
-            return (logicalPath, type)
+            return (logicalPath, fileType)
         }
 
         var data = WIN32_FIND_DATAW()
