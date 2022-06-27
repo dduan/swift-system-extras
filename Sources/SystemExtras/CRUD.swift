@@ -1,4 +1,7 @@
 import SystemPackage
+#if os(Windows)
+import WinSDK
+#endif
 
 let kCopyChunkSize = 16 * 1024
 
