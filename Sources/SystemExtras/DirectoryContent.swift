@@ -12,43 +12,48 @@ import WinSDK
 import SystemPackage
 
 extension FilePath {
-    public func directoryContent(recursive: Bool = false) -> DirectoryContent {
-        DirectoryContent(of: self, recursive: recursive)
+    public func directoryContent(recursive: Bool = false, followSymlink: Bool = false) -> DirectoryContent {
+        DirectoryContent(of: self, recursive: recursive, followSymlink: followSymlink)
     }
 }
 
 public struct DirectoryContent: Sequence {
     let directory: FilePath
     let recursive: Bool
+    let followSymlink: Bool
 
-    public init(of directory: FilePath, recursive: Bool = false) {
+    public init(of directory: FilePath, recursive: Bool = false, followSymlink: Bool = false) {
         self.directory = directory
         self.recursive = recursive
+        self.followSymlink = followSymlink
     }
 
     public func makeIterator() -> DirectoryContentIterator {
-        DirectoryContentIterator(queue: [directory], recursive: recursive)
+        DirectoryContentIterator(queue: [(directory, directory)], recursive: recursive, followSymlink: followSymlink)
     }
 }
 
-#if os(Windows)
 public final class DirectoryContentIterator: IteratorProtocol {
-    var queue: [FilePath]
+    var queue: [(FilePath, FilePath)] // (real, link)
     let recursive: Bool
-    init(queue: [FilePath], recursive: Bool) {
+    let followSymlink: Bool
+
+    init(queue: [(FilePath, FilePath)], recursive: Bool, followSymlink: Bool) {
         self.queue = queue
         self.recursive = recursive
+        self.followSymlink = followSymlink
     }
 
+#if os(Windows)
     deinit {
         if let handle = self.current?.handle {
             CloseHandle(handle)
         }
     }
 
-    var current: (handle: UnsafeMutableRawPointer, path: FilePath)?
+    var current: (handle: UnsafeMutableRawPointer, parent: FilePath, logicalParent: FilePath)?
     public func next() -> (FilePath, FileType)? {
-        func process(_ data: WIN32_FIND_DATAW) -> (FilePath, FileType)? {
+        func process(_ data: WIN32_FIND_DATAW, _ currentParent: FilePath, _ logicalCurrentParent: FilePath) -> (FilePath, FileType)? {
             guard let name = withUnsafeBytes(of: data.cFileName, {
                 $0.bindMemory(to: CInterop.PlatformChar.self)
                     .baseAddress
@@ -61,18 +66,29 @@ public final class DirectoryContentIterator: IteratorProtocol {
                 return nil
             }
 
-            let path = self.current!.path.appending(name)
+            let path = currentParent.appending(name)
+            let fileType = FileType(data)
+            let logicalPath = logicalCurrentParent.appending(name)
             if self.recursive {
-                queue.append(path)
+                if fileType.isSymlink,
+                    fileType.isDirectory,
+                    let link = try? path.readSymlink(),
+                    case let realPath = currentParent.pushing(link),
+                    (try? realPath.metadata().fileType.isDirectory) == true
+                {
+                    queue.append((realPath, path))
+                } else if fileType.isDirectory {
+                    queue.append((path, logicalPath))
+                }
             }
 
-            return(path, FileType(data))
+            return (logicalPath, fileType)
         }
 
         var data = WIN32_FIND_DATAW()
-        if let (handle, _) = self.current {
+        if let (handle, currentParent, logicalCurrentParent) = self.current {
             if FindNextFileW(handle, &data) {
-                if let result = process(data) {
+                if let result = process(data, currentParent, logicalCurrentParent) {
                     return result
                 }
             } else {
@@ -84,11 +100,11 @@ public final class DirectoryContentIterator: IteratorProtocol {
                 return nil
             }
 
-            let handle = (nextPath.appending("*")).withPlatformString { FindFirstFileW($0, &data) }
-            let currentPath = queue.removeFirst()
+            let handle = (nextPath.0.appending("*")).withPlatformString { FindFirstFileW($0, &data) }
+            let currentParent = queue.removeFirst()
             if let handle = handle, handle != INVALID_HANDLE_VALUE {
-                self.current = (handle, currentPath)
-                if let result = process(data) {
+                self.current = (handle, currentParent.0, currentParent.1)
+                if let result = process(data, currentParent.0, currentParent.1) {
                     return result
                 }
             } else {
@@ -98,17 +114,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
         }
         return next()
     }
-}
 #else
-public final class DirectoryContentIterator: IteratorProtocol {
-    var queue: [FilePath]
-    let recursive: Bool
-
-    init(queue: [FilePath], recursive: Bool) {
-        self.queue = queue
-        self.recursive = recursive
-    }
-
     deinit {
         if let handle = self.current?.handle {
             closedir(handle)
@@ -116,12 +122,12 @@ public final class DirectoryContentIterator: IteratorProtocol {
     }
 
 #if os(macOS)
-    var current: (handle: UnsafeMutablePointer<DIR>, path: FilePath)?
+    var current: (handle: UnsafeMutablePointer<DIR>, parent: FilePath, logicalParent: FilePath)?
 #else
-    var current: (handle: OpaquePointer, path: FilePath)?
+    var current: (handle: OpaquePointer, parent: FilePath, logicalParent: FilePath)?
 #endif
     public func next() -> (FilePath, FileType)? {
-        if let (handle, currentPath) = self.current {
+        if let (handle, currentParent, logicalCurrentParent) = self.current {
             guard let entry = readdir(handle)?.pointee else {
                 closedir(handle)
                 self.current = nil
@@ -140,22 +146,33 @@ public final class DirectoryContentIterator: IteratorProtocol {
             }
 
             let fileType = FileType(entry)
-            let path = currentPath.appending(name)
+            let path = currentParent.appending(name)
 
-            if recursive && fileType.isDirectory {
-                queue.append(path)
+            let logicalPath = logicalCurrentParent.appending(name)
+            if recursive {
+                if fileType.isDirectory {
+                    queue.append((path, logicalPath))
+                } else if
+                    fileType.isSymlink,
+                    self.followSymlink,
+                    let link = try? path.readSymlink(),
+                    case let realPath = currentParent.pushing(link),
+                    (try? realPath.metadata().fileType.isDirectory) == true
+                {
+                    queue.append((realPath, path))
+                }
             }
 
-            return (path, fileType)
+            return (logicalPath, fileType)
         } else {
             guard let nextPath = queue.first else {
                 return nil
             }
 
-            let handle = nextPath.withPlatformString { opendir($0) }
-            let currentPath = queue.removeFirst()
+            let handle = nextPath.0.withPlatformString { opendir($0) }
+            let currentParent = queue.removeFirst()
             if let handle = handle {
-                self.current = (handle: handle, path: currentPath)
+                self.current = (handle, currentParent.0, currentParent.1)
             } else {
                 self.current = nil
             }
@@ -163,5 +180,5 @@ public final class DirectoryContentIterator: IteratorProtocol {
             return next()
         }
     }
-}
 #endif
+}
