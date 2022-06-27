@@ -112,8 +112,8 @@ extension FilePath {
 #if os(Windows)
         let attributes = try source.metadata().permissions as! WindowsAttributes
 
-        source.withPlatformString { sourcePath in
-            destination.withPlatformString { destinationPath in
+        try source.withPlatformString { sourcePath in
+            try destination.withPlatformString { destinationPath in
                 if !CopyFileW(
                     sourcePath,
                     destinationPath,
