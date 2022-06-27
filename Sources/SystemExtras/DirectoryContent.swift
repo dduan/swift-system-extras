@@ -53,7 +53,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
 
     var current: (handle: UnsafeMutableRawPointer, path: FilePath, logicalPath: FilePath)?
     public func next() -> (FilePath, FileType)? {
-        func process(_ data: WIN32_FIND_DATAW) -> (FilePath, FileType)? {
+        func process(_ data: WIN32_FIND_DATAW, currentPath: FilePath, logicalCurrentPath: FilePath) -> (FilePath, FileType)? {
             guard let name = withUnsafeBytes(of: data.cFileName, {
                 $0.bindMemory(to: CInterop.PlatformChar.self)
                     .baseAddress
@@ -66,13 +66,23 @@ public final class DirectoryContentIterator: IteratorProtocol {
                 return nil
             }
 
-            let path = self.current!.path.appending(name)
-            let type = FileType(data)
+            let path = currentPath.appending(name)
+            let fileType = FileType(data)
+            let logicalPath = logicalCurrentPath.appending(name)
             if self.recursive {
-                queue.append((path, self.current!.logicalPath.appending(name)))
+                if fileType.isSymlink,
+                    fileType.isDirectory,
+                    let link = try? path.readSymlink(),
+                    case let realPath = currentPath.pushing(link),
+                    (try? realPath.metadata().fileType.isDirectory == true)
+                {
+                    queue.append((realPath, path))
+                } else if fileType.isDirectory {
+                    queue.append((path, logicalPath))
+                }
             }
 
-            return(path, type)
+            return (logicalPath, type)
         }
 
         var data = WIN32_FIND_DATAW()
@@ -93,8 +103,8 @@ public final class DirectoryContentIterator: IteratorProtocol {
             let handle = (nextPath.appending("*")).withPlatformString { FindFirstFileW($0, &data) }
             let currentPath = queue.removeFirst()
             if let handle = handle, handle != INVALID_HANDLE_VALUE {
-                self.current = (handle, currentPath)
-                if let result = process(data) {
+                self.current = (handle, currentPath.0, currentPath.1)
+                if let result = process(data, currentPath.0, currentPath.1) {
                     return result
                 }
             } else {
@@ -117,7 +127,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
     var current: (handle: OpaquePointer, path: FilePath, logicalPath: FilePath)?
 #endif
     public func next() -> (FilePath, FileType)? {
-        if let (handle, currentPath, logicalPath) = self.current {
+        if let (handle, currentPath, logicalCurrentPath) = self.current {
             guard let entry = readdir(handle)?.pointee else {
                 closedir(handle)
                 self.current = nil
@@ -138,9 +148,10 @@ public final class DirectoryContentIterator: IteratorProtocol {
             let fileType = FileType(entry)
             let path = currentPath.appending(name)
 
+            let logicalPath = logicalCurrentPath.appending(name)
             if recursive {
                 if fileType.isDirectory {
-                    queue.append((path, logicalPath.appending(name)))
+                    queue.append((path, logicalPath))
                 } else if
                     fileType.isSymlink,
                     self.followSymlink,
@@ -152,7 +163,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
                 }
             }
 
-            return (logicalPath.appending(name), fileType)
+            return (logicalPath, fileType)
         } else {
             guard let nextPath = queue.first else {
                 return nil
