@@ -10,6 +10,9 @@ Our goals are:
 
 [multi-platform]: https://github.com/apple/swift-system#multi-platform-not-cross-platform
 
+This library lets you create/read/update/delete files, directories, symlinks, and permissions, all the while leveraging the familiar types from Swift Systems.
+And yes, it all works on Windows!
+
 ## LICENSE
 
 See [LICENSE](LICENSE.txt) for license information.
