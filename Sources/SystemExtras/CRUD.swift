@@ -1,4 +1,9 @@
 import SystemPackage
+#if os(Windows)
+import WinSDK
+#endif
+
+let kCopyChunkSize = 16 * 1024
 
 extension FilePath {
     /// Create a directory, and, optionally, any intermediate directories that leads to it, if they don't
@@ -82,5 +87,71 @@ extension FilePath {
                 }
             }
         }
+    }
+
+    /// Copy a file or symlink from `self` to `destination`.
+    ///
+    /// - Parameters
+    ///   - destination: The path to destination.
+    ///   - followSymlink: If `self` is a symlink, `true` to copy the content it links to, `false` to copy the
+    ///                    link itself.
+    public func copyFile(to destination: FilePath, followSymlink: Bool = true) throws {
+        let sourceMeta = try metadata()
+
+        if !sourceMeta.fileType.isFile && !sourceMeta.fileType.isSymlink {
+            throw Errno(rawValue: -1)
+        }
+
+        let isLink = sourceMeta.fileType.isSymlink
+        if !followSymlink && isLink {
+            try self.readSymlink().makeSymlink(at: destination)
+            return
+        }
+
+        let source = isLink ? try self.readSymlink() : self
+#if os(Windows)
+        let attributes = try source.metadata().permissions as! WindowsAttributes
+
+        try source.withPlatformString { sourcePath in
+            try destination.withPlatformString { destinationPath in
+                if !CopyFileW(
+                    sourcePath,
+                    destinationPath,
+                    false
+                ) {
+                    throw Errno(rawValue: -1)
+                }
+
+                if !SetFileAttributesW(
+                    destinationPath,
+                    attributes.rawValue
+                ) {
+                    throw Errno(rawValue: -1)
+                }
+
+            }
+        }
+#else //os(Windows)
+        let permissions = try source.metadata().permissions as! FilePermissions
+        let sourceFD = try FileDescriptor.open(source, .readOnly)
+        defer { try? sourceFD.close() }
+        let destinationFD = try FileDescriptor.open(destination, .writeOnly, options: .create, permissions: permissions)
+        defer { try? destinationFD.close() }
+        let buffer = UnsafeMutableRawBufferPointer.allocate(byteCount: kCopyChunkSize, alignment: MemoryLayout<UInt8>.alignment)
+        defer { buffer.deallocate() }
+        defer {
+            try? destination.set(permissions)
+        }
+
+        var position: Int64 = 0
+        while true {
+            let length = try sourceFD.read(fromAbsoluteOffset: position, into: buffer)
+            if length == 0 {
+                break
+            }
+            _ = try destinationFD.write(toAbsoluteOffset: position, .init(start: buffer.baseAddress, count: length))
+            position = position + Int64(length)
+        }
+#endif //os(Windows)
     }
 }
