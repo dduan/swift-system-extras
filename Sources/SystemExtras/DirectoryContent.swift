@@ -74,7 +74,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
                     fileType.isDirectory,
                     let link = try? path.readSymlink(),
                     case let realPath = currentPath.pushing(link),
-                    (try? realPath.metadata().fileType.isDirectory == true)
+                    (try? realPath.metadata().fileType.isDirectory) == true
                 {
                     queue.append((realPath, path))
                 } else if fileType.isDirectory {
@@ -86,9 +86,9 @@ public final class DirectoryContentIterator: IteratorProtocol {
         }
 
         var data = WIN32_FIND_DATAW()
-        if let (handle, _) = self.current {
+        if let (handle, currentPath, logicalCurrentPath) = self.current {
             if FindNextFileW(handle, &data) {
-                if let result = process(data) {
+                if let result = process(data, currentPath, logicalCurrentPath) {
                     return result
                 }
             } else {
@@ -100,7 +100,7 @@ public final class DirectoryContentIterator: IteratorProtocol {
                 return nil
             }
 
-            let handle = (nextPath.appending("*")).withPlatformString { FindFirstFileW($0, &data) }
+            let handle = (nextPath.0.appending("*")).withPlatformString { FindFirstFileW($0, &data) }
             let currentPath = queue.removeFirst()
             if let handle = handle, handle != INVALID_HANDLE_VALUE {
                 self.current = (handle, currentPath.0, currentPath.1)
